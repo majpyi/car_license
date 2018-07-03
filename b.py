@@ -308,17 +308,36 @@ if(1):
 
 
     # 存储分割之后的纵向坐标信息
+    # 保留哪些主要的,没有被污染的字符坐标信息,在下面根据这些字符再细分处理
+    # 去除哪些范围较小的可能错误信息
+    interval = []
+    cut_length_first = []
     cut_colums = []
     for i in range(0,len(list_start)):
         if ( list_end[i]-list_start[i]>colums/15):
             cut_colums.append(list_start[i])
             cut_colums.append(list_end[i])
+            cut_length_first.append(list_end[i]-list_start[i])
+            interval.append(list_start[i+1] - list_end[i])
         elif(list_end[i]-list_start[i]<0):
             if(i>=1 and list_end[i]-list_start[i-1]>colums/15):
                 cut_colums.append(list_start[i-1])
                 cut_colums.append(list_end[i])
-    print("记录的纵向坐标分割点:  "+str(cut_colums))
+                cut_length_first.append(list_end[i] - list_start[i - 1])
+                interval.append(list_start[i]-list_end[i])
 
+    # 如果第一个是汉字的话,可能分为左右两个部分
+    # 这里进行判定,如果第一个前面的有一个完整的分割区域
+    # 并且这个分割区域之间的间隔小于间隔中位数的二分之一那么就就行合并处理
+    interval.sort()
+    pos =list1.index(cut_colums[0])
+    if( list1[pos]-cut_colums[0] < interval[ (int)(len(interval)/2) ]/2):
+        if(pos-2>=0):
+            cut_colums[0]=list1[pos-2]
+
+    print("fisrt切割长度坐标: " + str(cut_length_first))
+    print("intervel :"+str(interval))
+    print("记录的纵向坐标分割点:  "+str(cut_colums))
 
     #  主要处理因为一个汉字分为左右两个部分,会被判定为两个字符的情况,在这里我们使用判断条件,清除里面的不合理分割点
     # #  这里计算的不是字符的宽度而是字符与字符之间的间隔点
