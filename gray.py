@@ -1,0 +1,10 @@
+import cv2
+image = cv2.imread("/Users/Quantum/Desktop/云ASZ323.jpg")
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+gray = cv2.medianBlur(gray, 3)
+# gray = cv2.GaussianBlur(image,(5,5),0)
+# ret2,th2 = cv2.threshold(gray,127,255,cv2.THRESH_BINARY)
+# gray=cv2.equalizeHist(gray)
+ret2,th2 = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+print(ret2)
+cv2.imwrite("/Users/Quantum/Desktop/1.jpg",th2)

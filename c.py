@@ -9,22 +9,21 @@ num_num=0
 path = "/Users/Quantum/Desktop/croped/"
 files = os.listdir(path)
 
-for file in files:
-    file=file[:file.index(".")]
-    if(len(file)==0):
-        continue
-    print(list(file))
-    print(path+file+".jpg")
-    image = cv2.imread(path+file+".jpg")
-
-
+if (1):
+# for file in files:
+#     file=file[:file.index(".")]
+#     print(list(file))
+#     print(path+file+".jpg")
+#     image = cv2.imread(path+file+".jpg")
+    image = cv2.imread("/Users/Quantum/Desktop/"+"京H10621.jpg")
+    file = "京H10621"
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     cv2.imwrite("/Users/Quantum/Desktop/Grayscale.jpg",gray)
     gray = cv2.medianBlur(gray,3)
     cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg",gray)
 
-    ret2,gray = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
+    ret2,gray = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
     #  车牌的大小
     sp = image.shape
@@ -490,6 +489,7 @@ for file in files:
         index = cut_interval.index(max(cut_interval))
         print("cut_interval: "+str(cut_interval))
         #对于分割的时候一个空余的地方大于 2倍的中位数长度,则有可能里面有包含两个字符
+        #这里也需要处理一下,因为这个间隔点可能是包含点的点
         if(max(cut_interval) > 1.8*median_length and len(cut_colums)<=10 and index!=1):
             cut_colums.append(cut_colums[index*2+1])
             cut_colums.append(cut_colums[index*2+2])
@@ -511,13 +511,13 @@ for file in files:
     # 字符分割完成之后进行存储
     if(double==0):
         for i in range(1,len(cut_colums),2):
-            path_file = "/Users/Quantum/Desktop/mjy/"+file[(int)(i/2)]+"____"+file+"_____"+str(cut_colums[i])
+            path_file = "/Users/Quantum/Desktop/"+file[(int)(i/2)]+"____"+file+"_____"+str(cut_colums[i-1])+"   "+str(cut_colums[i])
             cv2.imwrite(path_file  + ".jpg",
                  image[:, range(cut_colums[i-1], cut_colums[i] + 1)][range(row_start, row_end + 1), :])
             num_num+=1
     else:
         for i in range(1, len(cut_colums), 2):
-            path_file = "/Users/Quantum/Desktop/mjy/" + file[(int)(i / 2)+2] + "____" + file+"_____"+str(cut_colums[i])
+            path_file = "/Users/Quantum/Desktop/" + file[(int)(i / 2)+2] + "____" + file+"_____"+str(cut_colums[i-1])+"   "+str(cut_colums[i])
             cv2.imwrite(path_file + ".jpg",
                         image[:, range(cut_colums[i - 1], cut_colums[i] + 1)][
                         range(row_start, row_end + 1), :])

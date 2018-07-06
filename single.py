@@ -1,14 +1,17 @@
 import cv2
 import os
 
+double = 0
 num_num=0
 #   提取字符数据库需要的提取文件的路径
 # if(1):
 #     image = cv2.imread("/Users/Quantum/Desktop/t.jpg")
 #     file = "GB34114"
-path = "/Users/Quantum/Desktop/croped/"
+# path = "/Users/Quantum/Desktop/sample/"
+path = "/Users/Quantum/Desktop/t7/"
 files = os.listdir(path)
 
+# if (1):
 for file in files:
     file=file[:file.index(".")]
     if(len(file)==0):
@@ -17,16 +20,22 @@ for file in files:
     print(path+file+".jpg")
     image = cv2.imread(path+file+".jpg")
 
+    # image = cv2.imread(path+"藏ADD615.jpg")
+    # file = "藏ADD615"
 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.medianBlur(image, 3)
+    cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg", gray)
+
+    gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
     cv2.imwrite("/Users/Quantum/Desktop/Grayscale.jpg",gray)
-    gray = cv2.medianBlur(gray,3)
-    cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg",gray)
-
-    ret2,gray = cv2.threshold(gray,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 
 
-    #  车牌的大小
+    # gray = cv2.equalizeHist(gray)
+
+    ret2, gray = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+    # ret2, gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+#  车牌的大小
     sp = image.shape
     print ("维度"+str(sp))
     rows = sp[0]  # height(rows) of image
@@ -34,14 +43,14 @@ for file in files:
 
 
     #   找到一个合理的阈值为二值化处理提前准备好条件
-    # sum =0
-    # num =0
-    # for i in range(rows):
-    #     for j in range(colums):
-    #         sum+=gray[i,j]
-    #         num+=1
-    # mean_value = (int)(sum/num)
-    # print("所有像素点平均值: "+str(mean_value))
+    sum =0
+    num =0
+    for i in range(rows):
+        for j in range(colums):
+            sum+=gray[i,j]
+            num+=1
+    mean_value = (int)(sum/num)
+    print("所有像素点平均值: "+str(mean_value))
 
 
     #  二值化处理,同时存储白色与黑色像素点的多少来判断字母和底色的颜色是黑是白
@@ -108,116 +117,15 @@ for file in files:
     print("横向标记分割: "+str(tag_rows))
 
 
-    # 判断是否是双排车辆
-    double = 0
-    double_start =0
-    double_end = 0
-    tag1 = 0
-    tag2 =0
-    for i in range((int)(rows/5),(int)(rows*4/5)):
-        #  这里有问题 163, 16, 11, 11, 5, 0, 0, 0, 0   如果是这样的分布就不会判断出来
-        # if (sum_rows[i] > tag_row  and sum_rows[i + 1]< tag_row / 2):
-        if (tag_rows[i] ==1  and tag_rows[i + 1]==0):
-            print(" 双排车牌_start   " +str(i))
-            tag1 = 1
-            double_start = i
-        # if(sum_rows[i] < tag_row/2  and sum_rows[i+1]>tag_row):
-        if(tag_rows[i] ==0  and tag_rows[i+1]==1 and i>double_start and double_start!=0 ):
-        # if(tag_rows[i] ==0  and tag_rows[i+1]==1 ):
-            print(" 双排车牌_end    "+str(i))
-            tag2 =1
-            double_end = i
-        if(tag1 and tag2):
-            double =1
-            break
 
 
-
-    #  对双排车牌的下半部分进行处理,重新进行赋值处理
-    if(double==1):
-        print("double_start: " + str(double_start))
-        print("double_end: " + str(double_end))
-        double_avg = (int)((double_start + double_end) / 2)
-        print("double_avg: " + str(double_avg))
-
-        # 存储上下两个部分
-        cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg", image[range(double_avg + 1), :])
-        cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg", image[range((int)(double_avg), rows), :])
-
-        # 存储两排车牌的上方字符
-        path_file_1 = "/Users/Quantum/Desktop/mjy/" + file[0] + "____" + file+".jpg"
-        cv2.imwrite(path_file_1,
-                    image[range(double_avg + 1),:][:, range((int)(colums * 2 / 10), (int)(colums / 2))])
-        path_file_2 = "/Users/Quantum/Desktop/mjy/" + file[1] + "____" + file+".jpg"
-        cv2.imwrite(path_file_2,
-                    image[range(double_avg + 1),:][:, range((int)(colums / 2), (int)(colums * 8 / 10))])
-
-
-        #  开始对双排车量的下部分非进行预处理,与前一步一致,进行横向分割
-        image = cv2.imread("/Users/Quantum/Desktop/double_down.jpg")
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        gray = cv2.medianBlur(gray, 3)
-        sp = image.shape
-        rows = sp[0]
-        colums = sp[1]
-
-        print("rows: "+str(rows)+"   "+"colums: "+str(colums))
-        # 上方的起始点
-        index1 = 0
-        # for i in range(rows):
-        #     #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        #     if (sum_rows[i] > tag_row / 2 and sum_rows[i] < colums * 3 / 4):
-        #         index1 = i - 1
-        #         break
-
-
-        # 二值化处理
-        for y in range(colums):
-            num = 0
-            for x in range(rows):
-                if (gray[x, y] > mean_value - 10):
-                    gray[x, y] = 255
-
-                else:
-                    gray[x, y] = 0
-
-
-        #   重新横向投影
-        sum_rows = [0 for n in range(rows)]
-        for x in range(rows):
-            num = 0
-            for y in range((int)(colums / 12), (int)(colums * 11 / 12)):
-                if (gray[x, y] == tag):
-                    sum_rows[x] = sum_rows[x] + 1
-        print("横向的投影: " + str(sum_rows))
-
-
-        # 下方的起始点
-        # index2 = (int)(rows * (11 / 12))
-        for i in range(rows - 1, -1, -1):
-            #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-            if (sum_rows[i] > tag_row / 2 and sum_rows[i] < colums * 3 / 4):
-                index2 = i - 1
-                # print(sum_rows[i])
-                print("双排车牌index2: " + str(index2))
-                break
-
-
-        #  分割
-        tag_rows = [0 for n in range(rows)]
-        for i in range(index1, index2):
-            if (sum_rows[i] > tag_row*2/3):
-                tag_rows[i] = 1
-            else:
-                tag_rows[i] = 0
-        print("横向标记分割: " + str(tag_rows))
 
 
 
     #   rows 的范围
     row_start = 0
     row_end = 0
-    for i in range(rows):
+    for i in range(rows-1):
         if(tag_rows[i]==0 and tag_rows[i+1]==1):
             row_start = i
             break
@@ -315,20 +223,25 @@ for file in files:
     interval = []
     cut_length_first = []
     cut_colums = []
-    for i in range(0,len(list_start)-1):
-        if ( list_end[i]-list_start[i]>colums/15):
-            cut_colums.append(list_start[i])
-            cut_colums.append(list_end[i])
-            cut_length_first.append(list_end[i]-list_start[i])
-            interval.append(list_start[i+1] - list_end[i])
-        elif(list_end[i]-list_start[i]<0):
-            if(i>=1 and list_end[i]-list_start[i-1]>colums/15):
-                cut_colums.append(list_start[i-1])
+    tag_length_p = 15
+    while(len(cut_colums)<=3):
+        for i in range(0,len(list_start)-1):
+            if ( list_end[i]-list_start[i]>colums/tag_length_p):
+                cut_colums.append(list_start[i])
                 cut_colums.append(list_end[i])
-                cut_length_first.append(list_end[i] - list_start[i - 1])
-                interval.append(list_start[i]-list_end[i])
+                cut_length_first.append(list_end[i]-list_start[i])
+                interval.append(list_start[i+1] - list_end[i])
+            elif(list_end[i]-list_start[i]<0):
+                if(i>=1 and list_end[i]-list_start[i-1]>colums/15):
+                    cut_colums.append(list_start[i-1])
+                    cut_colums.append(list_end[i])
+                    cut_length_first.append(list_end[i] - list_start[i - 1])
+                    interval.append(list_start[i]-list_end[i])
+        tag_length_p+=1
 
     print("记录的纵向坐标分割点:  "+str(cut_colums))
+
+
     # 如果第一个是汉字的话,可能分为左右两个部分
     # 这里进行判定,如果第一个前面的有一个完整的分割区域
     # 并且这个分割区域之间的间隔小于间隔中位数的二分之一那么就就行合并处理
@@ -342,6 +255,7 @@ for file in files:
     print("fisrt切割长度坐标: " + str(cut_length_first))
     print("intervel :"+str(interval))
     print("记录的纵向坐标分割点:  "+str(cut_colums))
+
 
     #  主要处理因为一个汉字分为左右两个部分,会被判定为两个字符的情况,在这里我们使用判断条件,清除里面的不合理分割点
     # #  这里计算的不是字符的宽度而是字符与字符之间的间隔点
@@ -490,6 +404,7 @@ for file in files:
         index = cut_interval.index(max(cut_interval))
         print("cut_interval: "+str(cut_interval))
         #对于分割的时候一个空余的地方大于 2倍的中位数长度,则有可能里面有包含两个字符
+        #这里也需要处理一下,因为这个间隔点可能是包含点的点
         if(max(cut_interval) > 1.8*median_length and len(cut_colums)<=10 and index!=1):
             cut_colums.append(cut_colums[index*2+1])
             cut_colums.append(cut_colums[index*2+2])
@@ -511,13 +426,13 @@ for file in files:
     # 字符分割完成之后进行存储
     if(double==0):
         for i in range(1,len(cut_colums),2):
-            path_file = "/Users/Quantum/Desktop/mjy/"+file[(int)(i/2)]+"____"+file+"_____"+str(cut_colums[i])
+            path_file = "/Users/Quantum/Desktop/3/"+file[(int)(i/2)]+"____"+file+"_____"+str(cut_colums[i-1])+"   "+str(cut_colums[i])
             cv2.imwrite(path_file  + ".jpg",
                  image[:, range(cut_colums[i-1], cut_colums[i] + 1)][range(row_start, row_end + 1), :])
             num_num+=1
     else:
         for i in range(1, len(cut_colums), 2):
-            path_file = "/Users/Quantum/Desktop/mjy/" + file[(int)(i / 2)+2] + "____" + file+"_____"+str(cut_colums[i])
+            path_file = "/Users/Quantum/Desktop/2/" + file[(int)(i / 2)+2] + "____" + file+"_____"+str(cut_colums[i-1])+"   "+str(cut_colums[i])
             cv2.imwrite(path_file + ".jpg",
                         image[:, range(cut_colums[i - 1], cut_colums[i] + 1)][
                         range(row_start, row_end + 1), :])
