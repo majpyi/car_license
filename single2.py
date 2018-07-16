@@ -74,47 +74,44 @@ for file in files:
         print("黑色的字体")
     cv2.imwrite("/Users/Quantum/Desktop/gray.jpg",gray)
 
-
-    # 横向投影与均值
     sum_rows = [0 for n in range(rows)]
     for x in range(rows):
-        num=0
-        for y in range((int)(colums/12),(int)(colums*11/12)):
-            if(gray[x,y]==tag):
-                sum_rows[x]=sum_rows[x]+1
-    print("横向的投影: "+str(sum_rows))
+        num = 0
+        for y in range(0, colums):
+            if (gray[x, y] == tag):
+                sum_rows[x] = sum_rows[x] + 1
+    print("横向的投影: " + str(sum_rows))
     sum_row = 0
     for i in range(rows):
-        sum_row+=sum_rows[i]
+        sum_row += sum_rows[i]
     tag_row = int(sum_row / rows)
-    print("mean_sum_rows:  " +  str(tag_row))
-
+    print("mean_sum_rows:  " + str(tag_row))
 
     # 上方的起始点,去掉车牌外部区域
     index1 = 0
     for i in range(rows):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if(sum_rows[i]>tag_row/2 and sum_rows[i]< colums*3/4):
-            index1=i
+        if (sum_rows[i] < colums * 1 / 5):
+            index1 = i
             break
     # 下方的起始点,去掉车牌外部区域
     index2 = 0
-    for i in range(rows-1,-1,-1):
+    for i in range(rows - 1, -1, -1):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if(sum_rows[i]>tag_row/2 and sum_rows[i]< colums*3/4):
-            index2=i-1
+        if (sum_rows[i] < colums * 1 / 5):
+            index2 = i - 1
             break
 
-    print("index1 :"+str(index1)+"   "+"index2 :"+str(index2))
+    rows_length = index2 - index1 + 1
 
     #  记录那些行是字符所在行
-    tag_rows=[0 for n in range(rows)]
-    for i in range(index1,index2):
-        if(sum_rows[i]>tag_row*1/3):
-            tag_rows[i]=1
-        else:
-            tag_rows[i]=0
-    print("横向标记分割: "+str(tag_rows))
+    # tag_rows=[0 for n in range(rows)]
+    # for i in range(index1,index2):
+    #     if(sum_rows[i]>tag_row*1/3):
+    #         tag_rows[i]=1
+    #     else:
+    #         tag_rows[i]=0
+    # print("横向标记分割: "+str(tag_rows))
 
 
 
@@ -123,22 +120,22 @@ for file in files:
 
 
     #   rows 的范围
-    row_start = 0
-    row_end = 0
-    for i in range(rows-1):
-        if(tag_rows[i]==0 and tag_rows[i+1]==1):
-            row_start = i
-            break
-    for i in range(rows-1,-1,-1):
-        if(tag_rows[i]==0 and tag_rows[i-1]==1):
-            row_end = i
-            break
-    print("row_start:  "+ str(row_start))
-    print("row_end:  "+ str(row_end))
-
-    rows_length = row_end-row_start
-
-    print("rows_length: "+str(rows_length))
+    row_start = index1
+    row_end = index2
+    # for i in range(rows-1):
+    #     if(tag_rows[i]==0 and tag_rows[i+1]==1):
+    #         row_start = i
+    #         break
+    # for i in range(rows-1,-1,-1):
+    #     if(tag_rows[i]==0 and tag_rows[i-1]==1):
+    #         row_end = i
+    #         break
+    # print("row_start:  "+ str(row_start))
+    # print("row_end:  "+ str(row_end))
+    #
+    # rows_length = row_end-row_start
+    #
+    # print("rows_length: "+str(rows_length))
 
 
 
@@ -169,13 +166,15 @@ for file in files:
 
     #  左边第一个车牌字符内部点
     for i in range(colums):
-        if(sum_colums[i]<rows_length*3/4 and sum_colums[i]>tag_colum/2):
+        # if(sum_colums[i]<rows_length*3/4 and sum_colums[i]>tag_colum/2):
+        if( sum_colums[i]>tag_colum/2):
             index1 = i-1
             break
 
     #  右边第一个车牌字符内部点
     for i in range(colums-1,-1,-1):
-        if (sum_colums[i] < rows_length * 3 / 4 and sum_colums[i] > tag_colum / 2):
+        # if (sum_colums[i] < rows_length * 3 / 4 and sum_colums[i] > tag_colum / 2):
+        if ( sum_colums[i] > tag_colum / 2):
             index2 = i - 1
             break
     print("index1 :"+str(index1)+"   "+"index2: "+str(index2))

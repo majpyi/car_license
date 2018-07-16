@@ -11,17 +11,17 @@ num_num=0
 path = "/Users/Quantum/Desktop/ok/"
 files = os.listdir(path)
 
-# if (1):
-for file in files:
-    file=file[:file.index(".")]
-    if(len(file)==0):
-        continue
-    print(list(file))
-    print(path+file+".jpg")
-    image = cv2.imread(path+file+".jpg")
+if (1):
+# for file in files:
+#     file=file[:file.index(".")]
+#     if(len(file)==0):
+#         continue
+#     print(list(file))
+#     print(path+file+".jpg")
+#     image = cv2.imread(path+file+".jpg")
 
-    # image = cv2.imread(path+"藏ADD615.jpg")
-    # file = "藏ADD615"
+    image = cv2.imread(path+"川A0331N.jpg")
+    file = "川A0331N"
 
     gray = cv2.medianBlur(image, 3)
     cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg", gray)
@@ -79,7 +79,8 @@ for file in files:
     sum_rows = [0 for n in range(rows)]
     for x in range(rows):
         num=0
-        for y in range((int)(colums/12),(int)(colums*11/12)):
+        # for y in range((int)(colums/12),(int)(colums*11/12)):
+        for y in range(0,colums):
             if(gray[x,y]==tag):
                 sum_rows[x]=sum_rows[x]+1
     print("横向的投影: "+str(sum_rows))
@@ -225,12 +226,13 @@ for file in files:
     cut_colums = []
     tag_length_p = 15
     while(len(cut_colums)<=3):
-        for i in range(0,len(list_start)-1):
+        for i in range(0,len(list_start)):
             if ( list_end[i]-list_start[i]>colums/tag_length_p):
                 cut_colums.append(list_start[i])
                 cut_colums.append(list_end[i])
                 cut_length_first.append(list_end[i]-list_start[i])
-                interval.append(list_start[i+1] - list_end[i])
+                if(i!=len(list_start)-1):
+                    interval.append(list_start[i+1] - list_end[i])
             elif(list_end[i]-list_start[i]<0):
                 if(i>=1 and list_end[i]-list_start[i-1]>colums/15):
                     cut_colums.append(list_start[i-1])
@@ -414,6 +416,7 @@ for file in files:
             cut_colums.append(cut_colums[index * 2 + 1])
             cut_colums.append(cut_colums[index * 2 + 2])
         cut_colums.sort()
+
         print(cut_colums)
 
 
