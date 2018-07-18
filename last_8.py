@@ -4,6 +4,8 @@ import os
 path = "/Users/Quantum/Desktop/1/"
 files = os.listdir(path)
 
+# if (1):
+
 # 循环遍历文件夹里面的图片
 for file in files:
     file=file[:file.index(".")]
@@ -12,6 +14,9 @@ for file in files:
     print(list(file))
     print(path+file+".jpg")
     image = cv2.imread(path+file+".jpg")
+
+    # image = cv2.imread(path + "川A14EE2.jpg")
+    # file = "川A14EE2"
 
     # 预处理图像
     gray = cv2.medianBlur(image, 3)
@@ -29,7 +34,6 @@ for file in files:
     #  黑白字体判断
     black_num = 0
     white_num = 0
-    tag = 0
     for y in range(colums):
         num = 0
         for x in range(rows):
@@ -78,107 +82,11 @@ for file in files:
 
     rows_length = index2 - index1+1
 
-    print("index1:"+str(index1)+"   "+"index2:"+str(index2))
 
 
-
-
-
-
-
-    double_row = [0 for n in range(colums) ]
-    for j in range(int(colums/4),int(colums/2)):
-        for i in range(index1,index2):
-            if (gray[i, j] == tag):
-                double_row[j] = double_row[j] + 1
-    print("double_row"+str(double_row))
-
-
-
-
-    double = 0
-    double_avg = 0
-
-    if (rows>colums*2/5):
-        double = 1
-
-
-    # 判断是否是双排车辆
-    if(double==1):
-        print("double")
-
-        for i in range(int(rows/5),int(rows/2)):
-            if(double_row[i] == 0):
-                double_avg = i
-                break
-
-        if(double_avg==0):
-            double_avg= double_row.index(min(double_row[:]))
-        double_avg += int(rows/5)
-
-        index1 = double_avg
-
-        #  对双排车牌的下半部分进行处理,重新进行赋值处理
-        # 存储上下两个部分
-        cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg", image[range(double_avg + 1), :])
-        cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg", image[range((int)(double_avg), rows), :])
-
-        # 存储两排车牌的上方字符
-        path_file_1 = "/Users/Quantum/Desktop/bu/" + file[0] + "____" + file + ".jpg"
-        cv2.imwrite(path_file_1,
-                    image[range(double_avg + 1), :][:, range((int)(colums * 1 / 7), (int)(colums / 2))])
-        path_file_2 = "/Users/Quantum/Desktop/bu/" + file[1] + "____" + file + ".jpg"
-        cv2.imwrite(path_file_2,
-                    image[range(double_avg + 1), :][:, range((int)(colums / 2), (int)(colums * 6 / 7))])
-
-
-        image = cv2.imread("/Users/Quantum/Desktop/double_down.jpg")
-        gray = cv2.medianBlur(image, 3)
-        cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg", gray)
-        gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
-        cv2.imwrite("/Users/Quantum/Desktop/gray.jpg",gray)
-        ret2, gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
-        rows = image.shape[0]
-
-        print("double_dow_row:"+str(rows))
-
-
-
-        #  对横向 row 的投影
-        # sum_rows = [0 for n in range(rows)]
-        # # for x in range(index1,rows):
-        # for x in range(0,rows):
-        #     num = 0
-        #     for y in range(0, colums):
-        #         if (gray[x, y] == tag):
-        #             sum_rows[x] = sum_rows[x] + 1
-        # print("横向的投影: " + str(sum_rows))
-        # sum_row = 0
-        # for i in range(rows):
-        #     sum_row += sum_rows[i]
-        # tag_row = int(sum_row / rows)
-        # print("mean_sum_rows:  " + str(tag_row))
-        #
-        # print("index1:" + str(index1) + "   " + "index2:" + str(index2))
-
-
-        rows_length = index2 - index1+1
-
-        index2 = index2 - double_avg -1
-
-        index1 = 0
-
-        print("index1:" + str(index1) + "   " + "index2:" + str(index2))
-
-
-
-
-
-
-
-
-
+    print("index1 :" + str(index1) + "   " + "index2 :" + str(index2))
+    cv2.imwrite("/Users/Quantum/Desktop/88.jpg",image[range(index1, index2),:] )
+    cv2.imwrite("/Users/Quantum/Desktop/89.jpg",gray[range(index1, index2),:] )
 
 
 
@@ -234,16 +142,9 @@ for file in files:
                     len_cos.append(len_co)
                     break
                 len_co+=1
-                
-    # 字符分割字符数目的判断
-    char_num = 7
-    if(double==1):
-        char_num =5
 
-
-
-    #  如果长度小于char_num个字符,表示字符的连接或者缺失, pass
-    if(len(len_cos)<char_num):
+    #  如果长度小于7个字符,表示字符的连接或者缺失, pass
+    if(len(len_cos)<7):
         continue
 
     print("len_cos :"+str(len_cos) )
@@ -269,9 +170,9 @@ for file in files:
     tag_stop = 0
     first_len = 0
 
-    if(len(len_cos)>char_num):
-        print("长度大于char_num")
-        for i in range(len(len_cos)-char_num+1):
+    if(len(len_cos)>7):
+        print("长度大于7")
+        for i in range(len(len_cos)-7+1):
             # if(len_cos[i]>=mean_len_cos*4/5 and i >3):
             # if(len_cos[i]>=mean_len_cos or first_len > mean_len_cos):
             if(len_cos[i]>=mean_len_cos and first_len > mean_len_cos):
@@ -282,8 +183,8 @@ for file in files:
             #     tag_stop =i
             #     print("%%%%%%%%")
             #     break
-            if(i==len(len_cos)-char_num):
-                tag_stop = len(len_cos)-char_num+1
+            if(i==len(len_cos)-7):
+                tag_stop = len(len_cos)-7+1
                 print("########")
                 break
             first_len+=len_cos[i]
@@ -297,6 +198,13 @@ for file in files:
         len_cos_end = len_cos_end[tag_stop-1:]
         print("汉字分隔len_cos_start :" + str(len_cos_start))
         print("汉字分隔len_cos_end :" + str(len_cos_end))
+
+
+
+    char_num = 7
+    # for i in range():
+
+
 
 
     # 寻找最大的前七个字符分割点
@@ -324,26 +232,22 @@ for file in files:
     print("七个最大的分隔last_start :" + str(last_start))
     print("七个最大的分割last_end :" + str(last_end))
 
-
-    in_num = 0
-    if(double==1):
-        in_num=2
     # 存储图片
     for i in range(len(last_start)):
         # path_file = "/Users/Quantum/Desktop/char/" + file[i] + "____" + file + "_____" + str(
-        path_file = "/Users/Quantum/Desktop/bu/" + file[i+in_num] + "____" + file + "_____" + str(
+        path_file = "/Users/Quantum/Desktop/bu/" + file[i] + "____" + file + "_____" + str(
             last_start[i]) + "   " + str(last_end[i])
         # cv2.imwrite(path_file + ".jpg",
         #             image[range(index1, index2), :][:, range(last_start[i], last_end[i])])
         if(i==0):
             cv2.imwrite(path_file + ".jpg",
-                       image[range(index1, index2), :][:, range(last_start[i], last_start[i + 1])])
-        elif(i==6-in_num):
+                       gray[range(index1, index2), :][:, range(last_start[i], last_start[i + 1])])
+        elif(i==6):
             cv2.imwrite(path_file + ".jpg",
-                        image[range(index1, index2), :][:, range(last_end[i - 1], last_end[i])])
+                        gray[range(index1, index2), :][:, range(last_end[i - 1], last_end[i])])
         else:
             cv2.imwrite(path_file + ".jpg",
-                    image[range(index1, index2), :][:, range(last_end[i-1], last_start[i+1])])
+                    gray[range(index1, index2), :][:, range(last_end[i-1], last_start[i+1])])
 
 
         # cv2.imwrite("/Users/Quantum/Desktop/"+str(last_start[i])+"   "+str(last_end[i])+".jpg", image[range(index1, index2), :][:,range(last_start[i],last_end[i])])

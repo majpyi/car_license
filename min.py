@@ -1,8 +1,14 @@
 import cv2
 import os
+import math
+from math import pow
+import matplotlib.pyplot as plt
+import numpy as np
 
-path = "/Users/Quantum/Desktop/1/"
+path = "/Users/Quantum/Desktop/ok/"
 files = os.listdir(path)
+
+# if (1):
 
 # 循环遍历文件夹里面的图片
 for file in files:
@@ -13,12 +19,16 @@ for file in files:
     print(path+file+".jpg")
     image = cv2.imread(path+file+".jpg")
 
+    # image = cv2.imread(path + "川A14EE2.jpg")
+    # file = "川A14EE2"
+
     # 预处理图像
-    gray = cv2.medianBlur(image, 3)
-    cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg", gray)
-    gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     cv2.imwrite("/Users/Quantum/Desktop/Grayscale.jpg", gray)
-    ret2, gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    gray1 = cv2.medianBlur(gray, 3)
+    cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg", gray)
+    ret2, gray = cv2.threshold(gray1, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
 
     # 图片大小获取
     sp = image.shape
@@ -29,7 +39,6 @@ for file in files:
     #  黑白字体判断
     black_num = 0
     white_num = 0
-    tag = 0
     for y in range(colums):
         num = 0
         for x in range(rows):
@@ -62,9 +71,9 @@ for file in files:
 
     # 上方的起始点,去掉车牌外部区域
     index1 = 0
-    for i in range(rows):
+    for i in range(rows-1):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if (sum_rows[i]  < colums * 1 / 5):
+        if (sum_rows[i]  < colums * 1 / 5 and sum_rows[i+1] > colums*1/5):
             index1 = i
             break
 
@@ -72,113 +81,18 @@ for file in files:
     index2 = 0
     for i in range(rows - 1, -1, -1):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if (sum_rows[i] < colums * 1 / 5):
+        if (sum_rows[i] < colums * 1 / 5 and sum_rows[i-1]>colums*1/5):
             index2 = i - 1
             break
 
     rows_length = index2 - index1+1
 
-    print("index1:"+str(index1)+"   "+"index2:"+str(index2))
 
 
-
-
-
-
-
-    double_row = [0 for n in range(colums) ]
-    for j in range(int(colums/4),int(colums/2)):
-        for i in range(index1,index2):
-            if (gray[i, j] == tag):
-                double_row[j] = double_row[j] + 1
-    print("double_row"+str(double_row))
-
-
-
-
-    double = 0
-    double_avg = 0
-
-    if (rows>colums*2/5):
-        double = 1
-
-
-    # 判断是否是双排车辆
-    if(double==1):
-        print("double")
-
-        for i in range(int(rows/5),int(rows/2)):
-            if(double_row[i] == 0):
-                double_avg = i
-                break
-
-        if(double_avg==0):
-            double_avg= double_row.index(min(double_row[:]))
-        double_avg += int(rows/5)
-
-        index1 = double_avg
-
-        #  对双排车牌的下半部分进行处理,重新进行赋值处理
-        # 存储上下两个部分
-        cv2.imwrite("/Users/Quantum/Desktop/double_up.jpg", image[range(double_avg + 1), :])
-        cv2.imwrite("/Users/Quantum/Desktop/double_down.jpg", image[range((int)(double_avg), rows), :])
-
-        # 存储两排车牌的上方字符
-        path_file_1 = "/Users/Quantum/Desktop/bu/" + file[0] + "____" + file + ".jpg"
-        cv2.imwrite(path_file_1,
-                    image[range(double_avg + 1), :][:, range((int)(colums * 1 / 7), (int)(colums / 2))])
-        path_file_2 = "/Users/Quantum/Desktop/bu/" + file[1] + "____" + file + ".jpg"
-        cv2.imwrite(path_file_2,
-                    image[range(double_avg + 1), :][:, range((int)(colums / 2), (int)(colums * 6 / 7))])
-
-
-        image = cv2.imread("/Users/Quantum/Desktop/double_down.jpg")
-        gray = cv2.medianBlur(image, 3)
-        cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg", gray)
-        gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
-        cv2.imwrite("/Users/Quantum/Desktop/gray.jpg",gray)
-        ret2, gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-
-        rows = image.shape[0]
-
-        print("double_dow_row:"+str(rows))
-
-
-
-        #  对横向 row 的投影
-        # sum_rows = [0 for n in range(rows)]
-        # # for x in range(index1,rows):
-        # for x in range(0,rows):
-        #     num = 0
-        #     for y in range(0, colums):
-        #         if (gray[x, y] == tag):
-        #             sum_rows[x] = sum_rows[x] + 1
-        # print("横向的投影: " + str(sum_rows))
-        # sum_row = 0
-        # for i in range(rows):
-        #     sum_row += sum_rows[i]
-        # tag_row = int(sum_row / rows)
-        # print("mean_sum_rows:  " + str(tag_row))
-        #
-        # print("index1:" + str(index1) + "   " + "index2:" + str(index2))
-
-
-        rows_length = index2 - index1+1
-
-        index2 = index2 - double_avg -1
-
-        index1 = 0
-
-        print("index1:" + str(index1) + "   " + "index2:" + str(index2))
-
-
-
-
-
-
-
-
-
+    print("index1 :" + str(index1) + "   " + "index2 :" + str(index2))
+    cv2.imwrite("/Users/Quantum/Desktop/88.jpg",image[range(index1, index2),:] )
+    cv2.imwrite("/Users/Quantum/Desktop/89.jpg",gray[range(index1, index2),:] )
+    cv2.imwrite("/Users/Quantum/Desktop/100.jpg",gray1[range(index1, index2),:] )
 
 
 
@@ -199,15 +113,69 @@ for file in files:
     tag_colum = int(sum_colum / colums)
     print("mean_sum_colum:  " + str(tag_colum))
 
-    #  标记列的,排除可能的噪声
+
+
+
+
+
+
+
+
+
+    min_colums = [0 for n in range(colums)]
+    # 纵向最小能力值
+    for i in range(colums):
+        sum_en = 0
+        # for j in range(int(rows/8),int(rows*7/8)):
+        for j in range(index1,index2):
+            sum_en += int(pow(abs(int(gray[j][i]-gray[j+1][i])),4)*pow((j*(rows-j)),1) )
+            # sum_en += int(pow(abs(int(gray[j][i]-gray[j+1][i])),4) )
+           # print(gray[j][i] - gray[j + 1][i])
+        min_colums[i]= sum_en
+    print(str(min_colums))
+
+    plt.figure()
+
+    # n = [x for x in range(colums)]
+    x = np.linspace(0,colums,colums)
+    y = min_colums
+    plt.subplot(1, 2, 1)
+    plt.plot(x,y)
+
+    sum_sum = 0
+    for i in range(colums):
+        sum_sum+=min_colums[i]
+    avg= sum_sum/colums
+    tag_min = [0 for n in range(colums)]
+    for i in range(colums):
+        if(min_colums[i]>avg/2):
+            tag_min[i] = 5
+    plt.subplot(1, 2, 2)
+    plt.plot(x,tag_min)
+
+    # plt.show()
+
+
+
+
+
+
+
     tag_colums = [0 for n in range(colums)]
     for i in range(colums):
-        if (sum_colums[i] > tag_colum / 3):
+        if (tag_min[i] == 5):
             tag_colums[i] = 1
-        else:
-            tag_colums[i] = 0
-
+    #  标记列的,排除可能的噪声
+    # tag_colums = [0 for n in range(colums)]
+    # for i in range(colums):
+    #     if (sum_colums[i] > tag_colum / 3):
+    #         tag_colums[i] = 1
+    #     else:
+    #         tag_colums[i] = 0
+    #
     print("纵向的标记: "+str(tag_colums))
+
+
 
 
     #  记录列分割时,列的长度情况
@@ -234,16 +202,9 @@ for file in files:
                     len_cos.append(len_co)
                     break
                 len_co+=1
-                
-    # 字符分割字符数目的判断
-    char_num = 7
-    if(double==1):
-        char_num =5
 
-
-
-    #  如果长度小于char_num个字符,表示字符的连接或者缺失, pass
-    if(len(len_cos)<char_num):
+    #  如果长度小于7个字符,表示字符的连接或者缺失, pass
+    if(len(len_cos)<7):
         continue
 
     print("len_cos :"+str(len_cos) )
@@ -269,9 +230,9 @@ for file in files:
     tag_stop = 0
     first_len = 0
 
-    if(len(len_cos)>char_num):
-        print("长度大于char_num")
-        for i in range(len(len_cos)-char_num+1):
+    if(len(len_cos)>7):
+        print("长度大于7")
+        for i in range(len(len_cos)-7+1):
             # if(len_cos[i]>=mean_len_cos*4/5 and i >3):
             # if(len_cos[i]>=mean_len_cos or first_len > mean_len_cos):
             if(len_cos[i]>=mean_len_cos and first_len > mean_len_cos):
@@ -282,8 +243,8 @@ for file in files:
             #     tag_stop =i
             #     print("%%%%%%%%")
             #     break
-            if(i==len(len_cos)-char_num):
-                tag_stop = len(len_cos)-char_num+1
+            if(i==len(len_cos)-7):
+                tag_stop = len(len_cos)-7+1
                 print("########")
                 break
             first_len+=len_cos[i]
@@ -309,7 +270,7 @@ for file in files:
     print(str(len_cos_again_copy))
     last_end = []
     last_start = []
-    for i in range(char_num):
+    for i in range(7):
         pos = len_cos_again.index( len_cos_again_copy[i] )
         len_cos_again[pos] = -1
         last_start.append(len_cos_start[pos])
@@ -324,26 +285,22 @@ for file in files:
     print("七个最大的分隔last_start :" + str(last_start))
     print("七个最大的分割last_end :" + str(last_end))
 
-
-    in_num = 0
-    if(double==1):
-        in_num=2
     # 存储图片
     for i in range(len(last_start)):
         # path_file = "/Users/Quantum/Desktop/char/" + file[i] + "____" + file + "_____" + str(
-        path_file = "/Users/Quantum/Desktop/bu/" + file[i+in_num] + "____" + file + "_____" + str(
+        path_file = "/Users/Quantum/Desktop/bu/" + file[i] + "____" + file + "_____" + str(
             last_start[i]) + "   " + str(last_end[i])
         # cv2.imwrite(path_file + ".jpg",
         #             image[range(index1, index2), :][:, range(last_start[i], last_end[i])])
         if(i==0):
             cv2.imwrite(path_file + ".jpg",
-                       image[range(index1, index2), :][:, range(last_start[i], last_start[i + 1])])
-        elif(i==6-in_num):
+                       gray[range(index1, index2), :][:, range(last_start[i], last_start[i + 1])])
+        elif(i==6):
             cv2.imwrite(path_file + ".jpg",
-                        image[range(index1, index2), :][:, range(last_end[i - 1], last_end[i])])
+                        gray[range(index1, index2), :][:, range(last_end[i - 1], last_end[i])])
         else:
             cv2.imwrite(path_file + ".jpg",
-                    image[range(index1, index2), :][:, range(last_end[i-1], last_start[i+1])])
+                    gray[range(index1, index2), :][:, range(last_end[i-1], last_start[i+1])])
 
 
         # cv2.imwrite("/Users/Quantum/Desktop/"+str(last_start[i])+"   "+str(last_end[i])+".jpg", image[range(index1, index2), :][:,range(last_start[i],last_end[i])])
