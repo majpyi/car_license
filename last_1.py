@@ -66,9 +66,10 @@ for file in files:
 
     # 上方的起始点,去掉车牌外部区域
     index1 = 0
-    for i in range(rows - 1):
+    for i in range(2,rows - 1):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if (sum_rows[i] < colums * 1 / 5 and sum_rows[i + 1] > colums * 1 / 5):
+        if (sum_rows[i] < colums * 1 / 5 and sum_rows[i-1] < colums * 1 / 5 and sum_rows[i-2] < colums * 1 / 5
+                and sum_rows[i + 1] > colums * 1 / 5):
             index1 = i
             break
 
@@ -76,7 +77,8 @@ for file in files:
     index2 = 0
     for i in range(rows - 1, -1, -1):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if (sum_rows[i] < colums * 1 / 5 and sum_rows[i - 1] > colums * 1 / 5):
+        if (sum_rows[i] < colums * 1 / 5 and sum_rows[i - 1] > colums * 1 / 5 and sum_rows[i - 2] > colums * 1 / 5
+        and sum_rows[i - 3] > colums * 1 / 5):
             index2 = i - 1
             break
 

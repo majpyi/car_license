@@ -1,13 +1,13 @@
 import cv2
 import os
 
-path = "/Users/Quantum/Desktop/1/"
+path = "/Users/Quantum/Desktop/ok/"
 files = os.listdir(path)
 
 # 循环遍历文件夹里面的图片
 for file in files:
-    file=file[:file.index(".")]
-    if(len(file)==0):
+    file = file[:file.index(".")]
+    if len(file) == 0:
         continue
     print(list(file))
     print(path+file+".jpg")
@@ -16,9 +16,10 @@ for file in files:
     # 预处理图像
     gray = cv2.medianBlur(image, 3)
     cv2.imwrite("/Users/Quantum/Desktop/medianBlur.jpg", gray)
-    gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
+    gray1 = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
     cv2.imwrite("/Users/Quantum/Desktop/Grayscale.jpg", gray)
-    ret2, gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    ret2, gray = cv2.threshold(gray1, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    cv2.imwrite("/Users/Quantum/Desktop/gray.jpg", gray)
 
     # 图片大小获取
     sp = image.shape
@@ -44,7 +45,6 @@ for file in files:
     else:
         tag = 0
         print("黑色的字体")
-    cv2.imwrite("/Users/Quantum/Desktop/gray.jpg", gray)
 
     #  对横向 row 的投影
     sum_rows = [0 for n in range(rows)]
@@ -64,7 +64,8 @@ for file in files:
     index1 = 0
     for i in range(rows):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if (sum_rows[i]  < colums * 1 / 5):
+        # if (sum_rows[i] < colums * 1 / 5 and sum_rows[i + 1] > colums * 1 / 5):
+        if (sum_rows[i] < colums * 1 / 5 ):
             index1 = i
             break
 
@@ -72,14 +73,16 @@ for file in files:
     index2 = 0
     for i in range(rows - 1, -1, -1):
         #  判断可能因为边框的选取多出来的黑色区域,所以加上了sum_sum[i]< rows*3/4 ,这个判断条件
-        if (sum_rows[i] < colums * 1 / 5):
+        # if (sum_rows[i] < colums * 1 / 5 and sum_rows[i - 1] > colums * 1 / 5):
+        if (sum_rows[i] < colums * 1 / 5 ):
             index2 = i - 1
             break
 
     rows_length = index2 - index1+1
 
     print("index1:"+str(index1)+"   "+"index2:"+str(index2))
-
+    cv2.imwrite("/Users/Quantum/Desktop/分割原图.jpg", image[range(index1, index2), :])
+    cv2.imwrite("/Users/Quantum/Desktop/分割灰度图.jpg", gray[range(index1, index2), :])
 
 
 
@@ -94,16 +97,14 @@ for file in files:
     print("double_row"+str(double_row))
 
 
-
-
     double = 0
     double_avg = 0
 
-    if (rows>colums*2/5):
-        double = 1
+    # if (rows>colums*2/5):
+    #     double = 1
 
 
-    # 判断是否是双排车辆
+    # 双排车辆
     if(double==1):
         print("double")
 
@@ -179,9 +180,6 @@ for file in files:
 
 
 
-
-
-
     #  纵向 colums 的投影
     sum_colums = [0 for n in range(colums)]
     for y in range(colums):
@@ -192,16 +190,32 @@ for file in files:
 
     print("纵向的投影: "+str(sum_colums))
 
+
+    colum_start = 0
+    colum_end = colums-1
+    #  去掉左右两边的可能的边框影响
+    for  i in range(colums):
+        if( sum_colums[i] < rows_length*3/4):
+            colum_start = i
+            break
+
+    for i in range(colums-1, -1, -1):
+        if (sum_colums[i] < rows_length * 3 / 4):
+            colum_end = i
+            break
+
+
+
     #  平均列长度
     sum_colum = 0
-    for i in range(colums):
+    for i in range(colum_start, colum_end):
         sum_colum += sum_colums[i]
     tag_colum = int(sum_colum / colums)
     print("mean_sum_colum:  " + str(tag_colum))
 
     #  标记列的,排除可能的噪声
     tag_colums = [0 for n in range(colums)]
-    for i in range(colums):
+    for i in range(colum_start, colum_end):
         if (sum_colums[i] > tag_colum / 3):
             tag_colums[i] = 1
         else:
@@ -234,7 +248,7 @@ for file in files:
                     len_cos.append(len_co)
                     break
                 len_co+=1
-                
+
     # 字符分割字符数目的判断
     char_num = 7
     if(double==1):
@@ -244,6 +258,7 @@ for file in files:
 
     #  如果长度小于char_num个字符,表示字符的连接或者缺失, pass
     if(len(len_cos)<char_num):
+        print("opps")
         continue
 
     print("len_cos :"+str(len_cos) )
@@ -333,17 +348,17 @@ for file in files:
         # path_file = "/Users/Quantum/Desktop/char/" + file[i] + "____" + file + "_____" + str(
         path_file = "/Users/Quantum/Desktop/bu/" + file[i+in_num] + "____" + file + "_____" + str(
             last_start[i]) + "   " + str(last_end[i])
-        # cv2.imwrite(path_file + ".jpg",
-        #             image[range(index1, index2), :][:, range(last_start[i], last_end[i])])
-        if(i==0):
-            cv2.imwrite(path_file + ".jpg",
-                       image[range(index1, index2), :][:, range(last_start[i], last_start[i + 1])])
-        elif(i==6-in_num):
-            cv2.imwrite(path_file + ".jpg",
-                        image[range(index1, index2), :][:, range(last_end[i - 1], last_end[i])])
-        else:
-            cv2.imwrite(path_file + ".jpg",
-                    image[range(index1, index2), :][:, range(last_end[i-1], last_start[i+1])])
+        cv2.imwrite(path_file + ".jpg",
+                    gray1[range(index1, index2), :][:, range(last_start[i], last_end[i])])
+        # if(i==0):
+        #     cv2.imwrite(path_file + ".jpg",
+        #                image[range(index1, index2), :][:, range(last_start[i], last_start[i + 1])])
+        # elif(i==6-in_num):
+        #     cv2.imwrite(path_file + ".jpg",
+        #                 image[range(index1, index2), :][:, range(last_end[i - 1], last_end[i])])
+        # else:
+        #     cv2.imwrite(path_file + ".jpg",
+        #             image[range(index1, index2), :][:, range(last_end[i-1], last_start[i+1])])
 
 
         # cv2.imwrite("/Users/Quantum/Desktop/"+str(last_start[i])+"   "+str(last_end[i])+".jpg", image[range(index1, index2), :][:,range(last_start[i],last_end[i])])
